@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sistema Gestão de Obras</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="./src/supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="app-body">
+  <header class="topbar" role="banner">
+    <div class="topbar-left">
+      <div class="brand">
+        <img class="brand-icon" src="assets/logo.png" alt="Construa Engenharia">
+        <div class="brand-text">
+          <div class="brand-title">Sistema Gestão de Obras</div>
+          <div class="brand-subtitle" id="brandSubtitle">Painel</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="user-chip" title="Usuário logado">
+        <img id="userAvatar" class="avatar" alt="Foto do usuário" />
+        <div class="user-meta">
+          <div id="userName" class="user-name"></div>
+          <div class="user-role">Admin</div>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" id="logoutBtn" type="button">Sair</button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+    <aside class="sidebar" role="navigation" aria-label="Menu">
+      <div class="sidebar-section">
+        <button class="nav-item" data-route="#/dashboard" type="button">
+          <span class="nav-ico" aria-hidden="true">📊</span>
+          <span class="nav-text">Dashboard</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="obras">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">🏗️</span>
+              <span class="nav-text">Obras</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="obras">
+            <button class="nav-subitem" data-route="#/obras/cadastro" type="button">
+              <span class="nav-text">Cadastro de Obras</span>
+            </button>
+            <button class="nav-subitem" data-route="#/orcamento/criacao" type="button">
+              <span class="nav-text">Criar Orçamento</span>
+            </button>
+            <button class="nav-subitem" data-route="#/obras/gestao" type="button">
+              <span class="nav-text">Gestão de Obras</span>
+            </button>
+            <button class="nav-subitem" data-route="#/orcamento/cronograma" type="button">
+              <span class="nav-text">Cronograma</span>
+            </button>
+            <button class="nav-subitem" data-route="#/obras/relatorios" type="button">
+              <span class="nav-text">Relatórios de Gestão</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="catalogo">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">📖</span>
+              <span class="nav-text">Catálogo</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="catalogo">
+            <button class="nav-subitem" data-route="#/catalogo/insumo" type="button">
+              <span class="nav-text">Insumo</span>
+            </button>
+            <button class="nav-subitem" data-route="#/catalogo/composicoes" type="button">
+              <span class="nav-text">Composições</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="orcamento">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">🧾</span>
+              <span class="nav-text">Orçamento</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="orcamento">
+            <button class="nav-subitem" data-route="#/orcamento/proposta" type="button">
+              <span class="nav-text">Proposta Comercial</span>
+            </button>
+            <button class="nav-subitem" data-route="#/orcamento/relatorios" type="button">
+              <span class="nav-text">Relatórios de Orçamentos</span>
+            </button>
+            <button class="nav-subitem" data-route="#/orcamento/integracoes" type="button">
+              <span class="nav-text">Integração com Gestão, Compras e Financeiro</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="financeiro">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">💰</span>
+              <span class="nav-text">Financeiro</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="financeiro">
+            <button class="nav-subitem" data-route="#/financeiro/recebimentos" type="button">
+              <span class="nav-text">Recebimentos</span>
+            </button>
+            <button class="nav-subitem" data-route="#/financeiro/cobranca" type="button">
+              <span class="nav-text">Cobrança Fácil</span>
+            </button>
+            <button class="nav-subitem" data-route="#/financeiro/pagamentos" type="button">
+              <span class="nav-text">Pagamentos</span>
+            </button>
+            <button class="nav-subitem" data-route="#/financeiro/fluxo-caixa" type="button">
+              <span class="nav-text">Fluxo de Caixa</span>
+            </button>
+            <button class="nav-subitem" data-route="#/financeiro/resultados" type="button">
+              <span class="nav-text">Resultados</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="compras">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">🛒</span>
+              <span class="nav-text">Compras</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="compras">
+            <button class="nav-subitem" data-route="#/compras/solicitacoes" type="button">
+              <span class="nav-text">Solicitações</span>
+            </button>
+            <button class="nav-subitem" data-route="#/compras/cotacoes" type="button">
+              <span class="nav-text">Cotações</span>
+            </button>
+            <button class="nav-subitem" data-route="#/compras/integracao-oc" type="button">
+              <span class="nav-text">Integração com Ordem de Compra</span>
+            </button>
+            <button class="nav-subitem" data-route="#/compras/emissao-oc" type="button">
+              <span class="nav-text">Emissão de Ordem de Compras</span>
+            </button>
+            <button class="nav-subitem" data-route="#/compras/orcado-comprado" type="button">
+              <span class="nav-text">Relatório Orçado x Comprado</span>
+            </button>
+            <button class="nav-subitem" data-route="#/compras/integracao" type="button">
+              <span class="nav-text">Integração com Orçamento e Financeiro</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="relatorios">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">📚</span>
+              <span class="nav-text">Relatórios</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="relatorios">
+            <button class="nav-subitem" data-route="#/relatorios/orcado-realizado" type="button">
+              <span class="nav-text">Orçado x Realizado</span>
+            </button>
+            <button class="nav-subitem" data-route="#/relatorios/desempenho" type="button">
+              <span class="nav-text">Desempenho de Custo</span>
+            </button>
+            <button class="nav-subitem" data-route="#/relatorios/apontamento" type="button">
+              <span class="nav-text">Apontamento de Mão de Obra</span>
+            </button>
+            <button class="nav-subitem" data-route="#/relatorios/estoque" type="button">
+              <span class="nav-text">Estoque disponível</span>
+            </button>
+            <button class="nav-subitem" data-route="#/relatorios/movimentacao" type="button">
+              <span class="nav-text">Movimentação de Insumos</span>
+            </button>
+            <button class="nav-subitem" data-route="#/relatorios/fluxo-dre" type="button">
+              <span class="nav-text">Fluxo de Caixa e DRE</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="medicao">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">📏</span>
+              <span class="nav-text">Medição de obras</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="medicao">
+            <button class="nav-subitem" data-route="#/medicao/criacao" type="button">
+              <span class="nav-text">Criação de Medições</span>
+            </button>
+            <button class="nav-subitem" data-route="#/medicao/integracao" type="button">
+              <span class="nav-text">Integração com Orçamento e Gestão de Obras</span>
+            </button>
+            <button class="nav-subitem" data-route="#/medicao/relatorios" type="button">
+              <span class="nav-text">Relatórios Gráficos</span>
+            </button>
+            <button class="nav-subitem" data-route="#/medicao/app" type="button">
+              <span class="nav-text">Aplicativo Medição de Obras</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-group">
+          <button class="nav-group-toggle" type="button" data-group="estoque">
+            <span class="nav-left">
+              <span class="nav-ico" aria-hidden="true">🏬</span>
+              <span class="nav-text">Estoque</span>
+            </span>
+            <span class="chev" aria-hidden="true">▾</span>
+          </button>
+          <div class="nav-group-items" data-group-items="estoque">
+            <button class="nav-subitem" data-route="#/estoque/depositos" type="button">
+              <span class="nav-text">Depósitos ilimitados</span>
+            </button>
+            <button class="nav-subitem" data-route="#/estoque/movimentacoes" type="button">
+              <span class="nav-text">Movimentações (Entrada, Saída e Transferência)</span>
+            </button>
+            <button class="nav-subitem" data-route="#/estoque/relatorios" type="button">
+              <span class="nav-text">Relatórios de Estoque</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content" role="main">
+      <div class="content-inner">
+        <div class="page-title" id="pageTitle">Dashboard</div>
+
+        <section id="viewContainer"></section>
+      </div>
+    </main>
+  </div>
+
+  <script src="./src/mock-data.js" defer></script>
+  <script src="./src/app.js" defer></script>
+</body>
+</html>

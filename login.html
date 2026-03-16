@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | Sistema Gestão de Obras</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="./src/supabase-config.js"></script>
+</head>
+<body class="auth-body">
+  <main class="auth-card" aria-label="Tela de login">
+    <div class="auth-brand">
+      <img class="brand-icon" src="assets/logo.png" alt="Construa Engenharia">
+      <div>
+        <div class="brand-title">Sistema Gestão de Obras</div>
+        <div class="brand-subtitle">Acesso do Administrador</div>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <form id="loginForm" class="auth-form" autocomplete="off">
+      <div class="field">
+        <label for="loginEmail">E-mail</label>
+        <input id="loginEmail" name="email" type="email" placeholder="seu@email.com" required />
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Senha</label>
+        <input id="loginPassword" name="password" type="password" placeholder="••••••••" required />
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="loginBtn">Entrar</button>
+
+      <div id="loginError" class="form-error" role="alert" hidden></div>
+
+      <div class="auth-hint">
+        Não tem conta? <a href="#" id="showRegister" class="auth-link">Criar conta</a>
+      </div>
+    </form>
+
+    <!-- Cadastro (oculto por padrão) -->
+    <form id="registerForm" class="auth-form" autocomplete="off" hidden>
+      <div class="field">
+        <label for="regNome">Nome completo</label>
+        <input id="regNome" name="nome" type="text" placeholder="Seu nome" required />
+      </div>
+
+      <div class="field">
+        <label for="regEmail">E-mail</label>
+        <input id="regEmail" name="email" type="email" placeholder="seu@email.com" required />
+      </div>
+
+      <div class="field">
+        <label for="regCargo">Cargo</label>
+        <input id="regCargo" name="cargo" type="text" placeholder="Ex: Engenheiro, Gerente" required />
+      </div>
+
+      <div class="field">
+        <label for="regPassword">Senha</label>
+        <input id="regPassword" name="password" type="password" placeholder="Mín. 6 caracteres" minlength="6" required />
+      </div>
+
+      <div class="field">
+        <label for="regPasswordConfirm">Confirmar senha</label>
+        <input id="regPasswordConfirm" name="passwordConfirm" type="password" placeholder="Repita a senha" minlength="6" required />
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="registerBtn">Criar conta</button>
+
+      <div id="registerError" class="form-error" role="alert" hidden></div>
+      <div id="registerSuccess" class="form-success" role="status" hidden></div>
+
+      <div class="auth-hint">
+        Já tem conta? <a href="#" id="showLogin" class="auth-link">Entrar</a>
+      </div>
+    </form>
+  </main>
+
+  <script src="./src/login.js" defer></script>
+</body>
+</html>
