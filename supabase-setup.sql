@@ -173,3 +173,33 @@ CREATE TRIGGER trg_catalogo_insumo_updated
   BEFORE UPDATE ON catalogo_insumo
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
+
+-- =====================
+-- 9. TABELA CATÁLOGO SINAPI
+-- =====================
+CREATE TABLE IF NOT EXISTS catalogo_sinapi (
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  codigo           NUMERIC(8,0) NOT NULL UNIQUE,
+  descricao        VARCHAR(270) NOT NULL,
+  unidade          VARCHAR(10),
+  grupo            VARCHAR(60),
+  origem_preco     VARCHAR(60),
+  estado           VARCHAR(2),
+  preco            NUMERIC(14,2) NOT NULL DEFAULT 0,
+  created_at       TIMESTAMPTZ DEFAULT now(),
+  updated_at       TIMESTAMPTZ DEFAULT now(),
+  user_id          UUID REFERENCES auth.users(id)
+);
+
+ALTER TABLE catalogo_sinapi ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated full access" ON catalogo_sinapi;
+CREATE POLICY "Authenticated full access"
+  ON catalogo_sinapi FOR ALL
+  USING (auth.role() = 'authenticated');
+
+DROP TRIGGER IF EXISTS trg_catalogo_sinapi_updated ON catalogo_sinapi;
+CREATE TRIGGER trg_catalogo_sinapi_updated
+  BEFORE UPDATE ON catalogo_sinapi
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();

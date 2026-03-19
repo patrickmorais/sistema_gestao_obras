@@ -727,7 +727,7 @@
             </div>
 
             <div class="actions" style="margin-top:8px">
-              <button class="btn btn-orange" type="submit" id="orcSaveBtn">Salvar</button>
+              <button class="btn btn-orange" type="submit" id="orcSaveBtn">Criar</button>
               <button class="btn btn-ghost" type="button" id="modalOrcCancel">Cancelar</button>
             </div>
 
@@ -821,48 +821,6 @@
       if (clienteEl) clienteEl.value = sel?.dataset?.cliente || '';
     });
 
-    // Renderizar tabela de orçamentos
-    function renderTable(rows) {
-      const tbl = document.getElementById('orcamentosTable');
-      if (!tbl) return;
-
-      tbl.innerHTML = `
-        <table class="table" aria-label="Orçamentos">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Obra</th>
-              <th>Cliente</th>
-              <th>Status Obra</th>
-              <th>Status Proposta</th>
-              <th>Custo</th>
-              <th>Preço</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(rows && rows.length) ? rows.map((o) => `
-              <tr>
-                <td>${o.codigo}</td>
-                <td>${o.obra}</td>
-                <td>${o.cliente}</td>
-                <td><span class="pill warn">${o.status_obra}</span></td>
-                <td><span class="pill">${o.status_proposta}</span></td>
-                <td>${Number(o.custo || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' })}</td>
-                <td>${Number(o.preco || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' })}</td>
-              </tr>
-            `).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">Nenhum orçamento cadastrado</td></tr>'}
-          </tbody>
-        </table>
-      `;
-    }
-
-    async function loadAndRenderTable() {
-      const supa = window.SGO_SUPABASE;
-      const { data, error } = await supa.from('orcamento_obra').select('*').order('created_at', { ascending: false });
-      if (error) { console.error('Erro ao carregar orçamentos:', error.message); return; }
-      renderTable(data || []);
-    }
-
     // Eventos
     document.getElementById('btnNovoOrcamento')?.addEventListener('click', openModal);
     document.getElementById('modalOrcClose')?.addEventListener('click', closeModal);
@@ -881,36 +839,65 @@
       const obraCode      = String(obraSelect?.value || '').trim();
       const selectedOpt   = obraSelect?.selectedOptions?.[0];
       const obraNome      = selectedOpt ? selectedOpt.textContent : obraCode;
-      const cliente       = selectedOpt?.dataset?.cliente || '';
       const status_obra   = String(statusObraEl?.value || '').trim();
 
-      const supa = window.SGO_SUPABASE;
-      const saveBtn = document.getElementById('orcSaveBtn');
-      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Salvando…'; }
-
-      const { error } = await supa.from('orcamento_obra').insert([{
-        codigo,
-        obra: obraNome,
-        cliente,
-        status_obra,
-        status_proposta: 'Em revisão',
-        custo: 0,
-        preco: 0
-      }]);
-
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Salvar'; }
-
-      if (error) {
-        if (error.code === '23505') { showMsg('Já existe um orçamento com esse código.'); }
-        else { showMsg('Erro ao salvar: ' + error.message); }
-        return;
-      }
-
       closeModal();
-      await loadAndRenderTable();
+      window.location.hash = '#/orcamento/detalhe?codigo=' + encodeURIComponent(codigo) + '&obra=' + encodeURIComponent(obraNome) + '&status_obra=' + encodeURIComponent(status_obra);
     });
+  }
 
-    loadAndRenderTable();
+  // ── TELA: Detalhe do Orçamento ──
+  function renderDetalheOrcamento(params) {
+    destroyCharts();
+
+    const codigo = params.get('codigo') || '';
+    const obra = params.get('obra') || '';
+    const statusObra = params.get('status_obra') || 'Em Orçamento';
+
+    viewContainer.innerHTML = `
+      <div class="card">
+        <div class="orc-detalhe-header">
+          <!-- Coluna: Botão Voltar + Navegação + Código/Obra -->
+          <div class="orc-detalhe-col" style="display:flex;align-items:center;gap:14px">
+            <button class="btn btn-ghost" type="button" id="btnVoltarOrc" style="display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <div>
+              <div style="font-size:12px;color:var(--muted);font-weight:700">Obras / Orçamentos</div>
+              <div style="font-size:16px;font-weight:900;margin-top:4px">${codigo}</div>
+            </div>
+          </div>
+
+          <!-- Separador -->
+          <div class="orc-detalhe-sep"></div>
+
+          <!-- Coluna: Base -->
+          <div class="orc-detalhe-col">
+            <div style="font-size:13px;font-weight:800;margin-bottom:8px">Base de Dados</div>
+            <label style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">
+              <span style="display:inline-block;width:90px">Base Própria</span> <input type="checkbox" id="chkBasePropria" checked />
+            </label>
+            <label style="display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px;white-space:nowrap">
+              <span style="display:inline-block;width:90px">Base SINAPI</span> <input type="checkbox" id="chkBaseSinapi" />
+            </label>
+          </div>
+
+          <!-- Separador -->
+          <div class="orc-detalhe-sep"></div>
+
+          <!-- Coluna: Status -->
+          <div class="orc-detalhe-col">
+            <div style="font-size:13px;font-weight:800;margin-bottom:8px">Status</div>
+            <div style="font-size:13px;font-weight:600">Obra: <span class="pill warn" style="margin-left:4px">${statusObra}</span></div>
+            <div style="font-size:13px;font-weight:600;margin-top:6px">Proposta: <span class="pill" style="margin-left:4px">Em Elaboração</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btnVoltarOrc')?.addEventListener('click', () => {
+      window.location.hash = '#/orcamento/criacao';
+    });
   }
 
   // ── TELA: Catálogo de Insumos ──
@@ -922,42 +909,49 @@
     let sortAsc = true;
 
     viewContainer.innerHTML = `
-      <div class="insumo-layout">
-        <div class="insumo-fixed">
-          <div class="filter-bar">
-            <div class="field search-wrap">
-              <label>&nbsp;</label>
-              <span class="search-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </span>
-              <input id="insBusca" type="text" placeholder="Digite sua busca" />
-            </div>
-            <div class="field">
-              <label>Base</label>
-              <select id="insBase"><option value="">Selecione</option></select>
-            </div>
-            <div class="field">
-              <label>Grupo</label>
-              <select id="insGrupo"><option value="">Selecione</option></select>
-            </div>
-            <div class="field">
-              <label>Tipo</label>
-              <select id="insTipo"><option value="">Selecione</option></select>
-            </div>
+      <div class="card">
+        <div class="card-title">Catálogo de Insumos</div>
+        <div class="card-subtitle">Filtros de pesquisa</div>
+        <div class="filter-bar">
+          <div class="field search-wrap">
+            <label>&nbsp;</label>
+            <span class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input id="insBusca" type="text" placeholder="Digite sua busca" />
           </div>
-
-          <div class="insumo-header">
-            <span><input type="checkbox" id="insSelectAll" /></span>
-            <button class="sort-btn" data-sort="codigo">Código <span class="sort-caret">▼</span></button>
-            <button class="sort-btn" data-sort="descricao">Descrição <span class="sort-caret">▼</span></button>
-            <span>Tipo</span>
-            <span>Unidade</span>
-            <button class="sort-btn" data-sort="grupo">Grupo <span class="sort-caret">▼</span></button>
-            <span>Base</span>
-            <span>Custo Unitário</span>
+          <div class="field">
+            <label>Base</label>
+            <select id="insBase"><option value="">Selecione</option></select>
+          </div>
+          <div class="field">
+            <label>Grupo</label>
+            <select id="insGrupo"><option value="">Selecione</option></select>
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="insTipo"><option value="">Selecione</option></select>
           </div>
         </div>
-        <div class="insumo-scroll" id="insumosBody"></div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="card" style="padding:0; overflow:hidden">
+        <div class="insumo-header">
+          <span><input type="checkbox" id="insSelectAll" /></span>
+          <button class="sort-btn" data-sort="codigo">Código <span class="sort-caret">▼</span></button>
+          <button class="sort-btn" data-sort="descricao">Descrição <span class="sort-caret">▼</span></button>
+          <span>Tipo</span>
+          <span>Unidade</span>
+          <button class="sort-btn" data-sort="grupo">Grupo <span class="sort-caret">▼</span></button>
+          <span>Base</span>
+          <span>Custo Unitário</span>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0; overflow:hidden">
+        <div class="insumo-scroll" id="insumosBody" style="max-height:calc(100vh - var(--topbar-h) - 320px); overflow-y:auto"></div>
       </div>
     `;
 
@@ -1212,6 +1206,17 @@
   };
 
   function navigate(route) {
+    // Rota dinâmica: detalhe do orçamento
+    if (route.startsWith('#/orcamento/detalhe')) {
+      const qs = route.split('?')[1] || '';
+      const params = new URLSearchParams(qs);
+      setActiveNav('#/orcamento/criacao');
+      if (pageTitle) pageTitle.textContent = 'Detalhe do Orçamento';
+      if (brandSubtitle) brandSubtitle.textContent = 'Orçamento > Detalhe';
+      renderDetalheOrcamento(params);
+      return;
+    }
+
     const r = ROUTES[route] ? route : '#/dashboard';
 
     setActiveNav(r);

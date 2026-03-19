@@ -672,3 +672,21 @@ select:focus{border-color:rgba(37,99,235,.60); box-shadow:0 0 0 3px rgba(37,99,2
   width:0;
   background:linear-gradient(90deg, rgba(37,99,235,.78), rgba(14,165,233,.72));
 }
+
+/* Detalhe Orçamento – header card */
+.orc-detalhe-header{
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  flex-wrap:wrap;
+}
+.orc-detalhe-col{
+  flex:1;
+  min-width:160px;
+  padding:14px 18px;
+}
+.orc-detalhe-sep{
+  width:1px;
+  align-self:stretch;
+  background:var(--border);
+}

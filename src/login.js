@@ -144,7 +144,7 @@
       return;
     }
 
-    setBtn(regBtn, true, 'Criar conta', 'Criando…');
+    setBtn(regBtn, true, 'Criar Conta', 'Criando…');
 
     const { data, error } = await supa.auth.signUp({
       email,
@@ -158,12 +158,15 @@
     });
 
     if (error) {
-      setBtn(regBtn, false, 'Criar conta', 'Criando…');
-      showEl(regError, error.message);
+      setBtn(regBtn, false, 'Criar Conta', 'Criando…');
+      showEl(regError,
+        error.message === 'User already registered'
+          ? 'Usuário já cadastrado.'
+          : error.message);
       return;
     }
 
-    setBtn(regBtn, false, 'Criar conta', 'Criando…');
+    setBtn(regBtn, false, 'Criar Conta', 'Criando…');
     registerForm.reset();
 
     // Se confirmação de e-mail estiver ativa no Supabase
